@@ -1,0 +1,27 @@
+.address {
+  display: flex;
+  align-items: center;
+  column-gap: 6px;
+  cursor: pointer;
+  div {
+    pointer-events: none;
+  }
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+  .icon {
+    width: 18px;
+    height: 18px;
+  }
+  .text {
+    max-width: 240px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    font-size: 14px;
+    line-height: 16px;
+    color: #fff;
+  }
+}
