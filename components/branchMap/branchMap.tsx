@@ -1,59 +1,67 @@
-"use client";
-
-import React, { useMemo } from "react";
-import dynamic from "next/dynamic";
+/* eslint-disable @next/next/no-img-element */
+import React, { useMemo, useState } from "react";
 import cls from "./branchMap.module.scss";
+import MapContainer from "containers/map/mapContainer";
 import { IShop } from "interfaces";
-import { Skeleton, Tooltip } from "@mui/material";
-import "leaflet/dist/leaflet.css";
-
-const MapContainer = dynamic(() => import("react-leaflet/MapContainer"), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet/TileLayer"), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet/Marker"), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet/Popup"), { ssr: false });
+import { Skeleton } from "@mui/material";
+import StoreCard from "components/storeCard/storeCard";
+import PopoverContainer from "containers/popover/popover";
+import { useRouter } from "next/router";
+import useUserLocation from "hooks/useUserLocation";
+import { useBranch } from "contexts/branch/branch.context";
 
 type MarkerProps = {
   data: IShop;
   lat: number;
   lng: number;
   index: number;
-  handleSubmit: (id: string) => void;
+  handleHover: (event: any, branch: IShop) => void;
+  handleHoverLeave: () => void;
 };
 
-const CustomMarker = ({ data, index, handleSubmit }: MarkerProps) => {
+const Marker = ({
+  data,
+  index,
+  handleHover,
+  handleHoverLeave,
+}: MarkerProps) => {
+  const { push } = useRouter();
+  const { updateBranch } = useBranch();
+
+  const handleClick = () => {
+    updateBranch(data);
+    push("/");
+  };
+
   return (
-    <Marker position={[Number(data.location?.latitude) || 0, Number(data.location?.longitude) || 0]}>
-      <Popup>
-        <Tooltip title={data.translation?.title} arrow>
-          <button
-            className={cls.mark}
-            onClick={() => handleSubmit(data.id.toString())}
-          >
-            {index}
-          </button>
-        </Tooltip>
-      </Popup>
-    </Marker>
+    <div
+      className={cls.marker}
+      onMouseEnter={(event: any) => handleHover(event, data)}
+      onMouseLeave={handleHoverLeave}
+    >
+      <button id={`marker-${index}`} className={cls.mark} onClick={handleClick}>
+        {index}
+      </button>
+    </div>
   );
 };
 
 type Props = {
   data?: IShop[];
   isLoading?: boolean;
-  handleSubmit: (id: string) => void;
 };
 
-const SetViewOnClick = ({ center, zoom }: { center: [number, number], zoom: number }) => {
-  const map = useMap();
-  map.setView(center, zoom);
-  return null;
-};
+export default function BranchMapSplash({ data = [], isLoading }: Props) {
+  const [hoveredBranch, setHoveredBranch] = useState<IShop | undefined>(
+    undefined
+  );
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const location = useUserLocation();
 
-export default function BranchMap({
-  data = [],
-  isLoading,
-  handleSubmit,
-}: Props) {
+  const handleOpen = (event: any) => setAnchorEl(event?.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
   const markers = useMemo(
     () =>
       data.map((item) => ({
@@ -64,39 +72,61 @@ export default function BranchMap({
     [data]
   );
 
-  const center: [number, number] = markers.length > 0 ? [markers[0].lat, markers[0].lng] : [0, 0];
-  const zoom = 13;
-
-  // Ensure we only render the map component on the client side
-  if (typeof window === 'undefined') {
-    return null;
-  }
+  const handleApiLoaded = (map: any, maps: any) => {
+    let bounds = new maps.LatLngBounds();
+    for (var i = 0; i < markers.length; i++) {
+      bounds.extend(markers[i]);
+    }
+    if (!markers.length) {
+      bounds.extend({
+        lat: Number(location?.latitude) || 0,
+        lng: Number(location?.longitude) || 0,
+      });
+    }
+    map.fitBounds(bounds);
+  };
 
   return (
-    <div className={cls.wrapper}>
+    <div className={`${cls.wrapper} ${cls.splash}`}>
       {!isLoading ? (
         <MapContainer
-          className={cls.mapContainer}
-          style={{ height: "100%", width: "100%" }}
+          yesIWantToUseGoogleMapApiInternals
+          onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
         >
-          <SetViewOnClick center={center} zoom={zoom} />
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
           {markers.map((item, idx) => (
-            <CustomMarker
+            <Marker
               key={idx}
               lat={item.lat}
               lng={item.lng}
               data={item.data}
               index={idx + 1}
-              handleSubmit={handleSubmit}
+              handleHover={(event: any, branch: IShop) => {
+                setHoveredBranch(branch);
+                handleOpen(event);
+              }}
+              handleHoverLeave={handleClose}
             />
           ))}
         </MapContainer>
       ) : (
         <Skeleton variant="rectangular" className={cls.shimmer} />
       )}
+
+      <PopoverContainer
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        disableRestoreFocus={true}
+        sx={{
+          pointerEvents: "none",
+        }}
+      >
+        <div className={cls.float}>
+          {!!hoveredBranch && <StoreCard data={hoveredBranch} />}
+        </div>
+      </PopoverContainer>
     </div>
   );
 }

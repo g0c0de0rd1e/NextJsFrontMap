@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import cls from "./addressModal.module.scss";
 import { DialogProps } from "@mui/material";
 import ModalContainer from "containers/modal/modal";
 import DarkButton from "components/button/darkButton";
@@ -23,6 +22,7 @@ import ConfirmationModal from "components/confirmationModal/confirmationModal";
 import useLocale from "hooks/useLocale";
 import BranchListForm from "components/branchListForm/branchListForm";
 import Loading from "components/loader/loading";
+import cls from "./addressModal.module.scss";
 
 const shopStatuses = ["near_you", "open_now", "24/7", "new"];
 
@@ -79,9 +79,10 @@ export default function AddressModal({ address, latlng, ...rest }: Props) {
     );
   }
 
-  async function defineLocation(position: GeolocationPosition) {
+  async function defineLocation(position: any) {
     const { coords } = position;
-    const addr = await getAddressFromLocation(coords.latitude, coords.longitude);
+    let latlng: string = `${coords.latitude},${coords.longitude}`;
+    const addr = await getAddressFromLocation(latlng);
     if (inputRef.current) inputRef.current.value = addr;
     const locationObj = {
       lat: coords.latitude,

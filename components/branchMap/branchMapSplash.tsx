@@ -1,8 +1,7 @@
-"use client";
-
+/* eslint-disable @next/next/no-img-element */
 import React, { useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import cls from "./branchMap.module.scss";
+import MapContainer from "containers/map/mapContainer";
 import { IShop } from "interfaces";
 import { Skeleton } from "@mui/material";
 import StoreCard from "components/storeCard/storeCard";
@@ -11,21 +10,16 @@ import { useRouter } from "next/router";
 import useUserLocation from "hooks/useUserLocation";
 import { useBranch } from "contexts/branch/branch.context";
 
-const MapContainer = dynamic(() => import("react-leaflet/MapContainer"), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet/TileLayer"), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet/Marker"), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet/Popup"), { ssr: false });
-
 type MarkerProps = {
   data: IShop;
   lat: number;
   lng: number;
   index: number;
-  handleHover: (event: any, branch: IShop) => void; 
+  handleHover: (event: any, branch: IShop) => void;
   handleHoverLeave: () => void;
 };
 
-const CustomMarker = ({
+const Marker = ({
   data,
   index,
   handleHover,
@@ -40,32 +34,21 @@ const CustomMarker = ({
   };
 
   return (
-    <Marker
-      position={[Number(data.location?.latitude) || 0, Number(data.location?.longitude) || 0]}
-      eventHandlers={{
-        mouseover: (event: any) => handleHover(event, data), 
-        mouseout: handleHoverLeave,
-        click: handleClick,
-      }}
+    <div
+      className={cls.marker}
+      onMouseEnter={(event: any) => handleHover(event, data)}
+      onMouseLeave={handleHoverLeave}
     >
-      <Popup>
-        <button id={`marker-${index}`} className={cls.mark}>
-          {index}
-        </button>
-      </Popup>
-    </Marker>
+      <button id={`marker-${index}`} className={cls.mark} onClick={handleClick}>
+        {index}
+      </button>
+    </div>
   );
 };
 
 type Props = {
   data?: IShop[];
   isLoading?: boolean;
-};
-
-const SetViewOnClick = ({ center }: { center: [number, number] }) => {
-  const map = useMap();
-  map.setView(center, map.getZoom());
-  return null;
 };
 
 export default function BranchMapSplash({ data = [], isLoading }: Props) {
@@ -89,35 +72,35 @@ export default function BranchMapSplash({ data = [], isLoading }: Props) {
     [data]
   );
 
-  const center: [number, number] = markers.length > 0 ? [markers[0].lat, markers[0].lng] : [0, 0];
-  const zoom = 13;
-
-  // Ensure we only render the map component on the client side
-  if (typeof window === 'undefined') {
-    return null;
-  }
+  const handleApiLoaded = (map: any, maps: any) => {
+    let bounds = new maps.LatLngBounds();
+    for (var i = 0; i < markers.length; i++) {
+      bounds.extend(markers[i]);
+    }
+    if (!markers.length) {
+      bounds.extend({
+        lat: Number(location?.latitude) || 0,
+        lng: Number(location?.longitude) || 0,
+      });
+    }
+    map.fitBounds(bounds);
+  };
 
   return (
     <div className={`${cls.wrapper} ${cls.splash}`}>
       {!isLoading ? (
         <MapContainer
-          className={cls.mapContainer}
-          style={{ height: "100%", width: "100%" }}
-          center={center}
-          zoom={zoom}
+          yesIWantToUseGoogleMapApiInternals
+          onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
         >
-          <SetViewOnClick center={center} />
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
           {markers.map((item, idx) => (
-            <CustomMarker
+            <Marker
               key={idx}
               lat={item.lat}
               lng={item.lng}
               data={item.data}
               index={idx + 1}
-              handleHover={(event: any, branch: IShop) => { 
+              handleHover={(event: any, branch: IShop) => {
                 setHoveredBranch(branch);
                 handleOpen(event);
               }}

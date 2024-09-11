@@ -32,7 +32,6 @@ import "react-toastify/dist/ReactToastify.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "nprogress/nprogress.css";
-//import 'leaflet/dist/leaflet.css'
 
 Router.events.on("routeChangeStart", () => NProgress.start());
 Router.events.on("routeChangeComplete", () => NProgress.done());

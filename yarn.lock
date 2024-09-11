@@ -1156,6 +1156,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-leaflet@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@types/react-leaflet/-/react-leaflet-3.0.0.tgz#b27a50abb6e3ae734d3c15399a26c77c161cab1c"
+  integrity sha512-p8R9mVKbCDDqOdW+M6GyJJuFn6q+IgDFYavFiOIvaWHuOe5kIHZEtCy1pfM43JIA6JiB3D/aDoby7C51eO+XSg==
+  dependencies:
+    react-leaflet "*"
+
 "@types/react-redux@^7.1.24":
   version "7.1.33"
   resolved "https://registry.npmjs.org/@types/react-redux/-/react-redux-7.1.33.tgz"
@@ -3259,10 +3266,10 @@ language-tags@^1.0.9:
   dependencies:
     language-subtag-registry "^0.3.20"
 
-leaflet@^1.9.4:
-  version "1.9.4"
-  resolved "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz"
-  integrity sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==
+leaflet-defaulticon-compatibility@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/leaflet-defaulticon-compatibility/-/leaflet-defaulticon-compatibility-0.1.2.tgz#f5e1a5841aeab9d1682d17887348855a741b3c2a"
+  integrity sha512-IrKagWxkTwzxUkFIumy/Zmo3ksjuAu3zEadtOuJcKzuXaD76Gwvg2Z1mLyx7y52ykOzM8rAH5ChBs4DnfdGa6Q==
 
 less@^4.1.1:
   version "4.2.0"
@@ -3983,7 +3990,7 @@ react-is@^18.0.0, react-is@^18.3.1:
   resolved "https://registry.npmjs.org/react-is/-/react-is-18.3.1.tgz"
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
 
-react-leaflet@^4.2.1:
+react-leaflet@*:
   version "4.2.1"
   resolved "https://registry.npmjs.org/react-leaflet/-/react-leaflet-4.2.1.tgz"
   integrity sha512-p9chkvhcKrWn/H/1FFeVSqLdReGwn2qmiobOQGO3BifX+/vV/39qhY8dGqbdcPh1e6jxh/QHriLXr7a4eLFK4Q==

@@ -2,17 +2,17 @@ import React, { useRef, useState } from "react";
 import ModalContainer from "containers/modal/modal";
 import { DialogProps } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import cls from "./addressModal.module.scss";
 import Search2LineIcon from "remixicon-react/Search2LineIcon";
 import DarkButton from "components/button/darkButton";
-import BranchMap from "components/branchMap/branchMap";
+import Map from "components/map/map";
 import ArrowLeftLineIcon from "remixicon-react/ArrowLeftLineIcon";
 import CompassDiscoverLineIcon from "remixicon-react/CompassDiscoverLineIcon";
 import { getAddressFromLocation } from "utils/getAddressFromLocation";
-import { Location, OrderFormValues, IShop } from "interfaces";
+import { Location, OrderFormValues } from "interfaces";
 import { FormikProps } from "formik";
 import { useQuery } from "react-query";
 import shopService from "services/shop";
+import cls from "./addressModal.module.scss";
 
 interface Props extends DialogProps {
   address: string;
@@ -27,23 +27,23 @@ export default function DeliveryAddressModal({
   ...rest
 }: Props) {
   const { t } = useTranslation();
-  const [location, setLocation] = useState<Location>({
-    latitude: latlng.latitude.toString(),
-    longitude: latlng.longitude.toString(),
+  const [location, setLocation] = useState({
+    lat: Number(latlng.latitude),
+    lng: Number(latlng.longitude),
   });
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { isSuccess } = useQuery(["shopZone", location], () =>
     shopService.checkZone({
-      address: { latitude: parseFloat(location.latitude), longitude: parseFloat(location.longitude) },
+      address: { latitude: location.lat, longitude: location.lng },
     })
   );
 
   function submitAddress() {
     formik?.setFieldValue("address.address", inputRef.current?.value);
     formik?.setFieldValue("location", {
-      latitude: location.latitude,
-      longitude: location.longitude,
+      latitude: location.lat,
+      longitude: location.lng,
     });
     if (rest.onClose) rest.onClose({}, "backdropClick");
   }
@@ -55,29 +55,17 @@ export default function DeliveryAddressModal({
     );
   }
 
-  async function defineLocation(position: GeolocationPosition) {
+  async function defineLocation(position: any) {
     const { coords } = position;
-    const addr = await getAddressFromLocation(coords.latitude, coords.longitude);
+    let latlng: string = `${coords.latitude},${coords.longitude}`;
+    const addr = await getAddressFromLocation(latlng);
     if (inputRef.current?.value) inputRef.current.value = addr;
     const locationObj = {
-      latitude: coords.latitude.toString(),
-      longitude: coords.longitude.toString(),
+      lat: coords.latitude,
+      lng: coords.longitude,
     };
     setLocation(locationObj);
   }
-
-  const shopData: IShop = {
-  id: 1,
-  translation: {
-    title: "Shop Title",
-    locale: "en", 
-    description: "Description of the shop"
-  },
-  price: 0,
-  open: true,
-  location: location,
-};
-
 
   return (
     <ModalContainer {...rest}>
@@ -107,10 +95,10 @@ export default function DeliveryAddressModal({
           </div>
         </div>
         <div className={cls.body}>
-          <BranchMap
-            data={[shopData]}
-            isLoading={!isSuccess}
-            handleSubmit={(id) => console.log(id)}
+          <Map
+            location={location}
+            setLocation={setLocation}
+            inputRef={inputRef}
           />
         </div>
         <div className={cls.form}>
