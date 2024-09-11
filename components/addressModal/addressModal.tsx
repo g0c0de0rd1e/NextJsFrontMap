@@ -82,7 +82,7 @@ export default function AddressModal({ address, latlng, ...rest }: Props) {
   async function defineLocation(position: any) {
     const { coords } = position;
     let latlng: string = `${coords.latitude},${coords.longitude}`;
-    const addr = await getAddressFromLocation(latlng);
+    const addr = await getAddressFromLocation(coords.latitude, coords.longitude);
     if (inputRef.current) inputRef.current.value = addr;
     const locationObj = {
       lat: coords.latitude,

@@ -1,14 +1,21 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, ReactNode } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import useUserLocation from 'hooks/useUserLocation';
 
-export default function MapContainer({ children, ...rest }) {
-  const mapContainer = useRef(null);
+interface MapContainerProps {
+  children: ReactNode;
+  [key: string]: any;
+}
+
+export default function MapContainer({ children, ...rest }: MapContainerProps) {
+  const mapContainer = useRef<HTMLDivElement | null>(null);
   const location = useUserLocation();
 
   useEffect(() => {
-    if (location) {
+    console.log("User location:", location); 
+
+    if (location && mapContainer.current) {
       const map = new maplibregl.Map({
         container: mapContainer.current,
         style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', 

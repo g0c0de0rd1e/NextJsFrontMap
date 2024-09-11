@@ -6,15 +6,20 @@ export default function useUserLocation() {
   const { location: userLocation } = useSettings();
 
   const location: Location | undefined = useMemo(() => {
-    const latlng = userLocation;
-    if (!latlng) {
+    if (!userLocation) {
       return undefined;
     }
+
+    const [latitude, longitude] = userLocation.split(",").map(coord => coord.toString());
+    if (isNaN(Number(latitude)) || isNaN(Number(longitude))) {
+      return undefined;
+    }
+
     return {
-      latitude: latlng.split(",")[0],
-      longitude: latlng.split(",")[1],
+      latitude,
+      longitude,
     };
   }, [userLocation]);
-
+  console.log("Parsed location:", location);
   return location;
 }

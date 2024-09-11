@@ -57,9 +57,8 @@ export default function DeliveryAddressModal({
 
   async function defineLocation(position: any) {
     const { coords } = position;
-    let latlng: string = `${coords.latitude},${coords.longitude}`;
-    const addr = await getAddressFromLocation(latlng);
-    if (inputRef.current?.value) inputRef.current.value = addr;
+    const addr = await getAddressFromLocation(coords.latitude, coords.longitude);
+    if (inputRef.current) inputRef.current.value = addr;
     const locationObj = {
       lat: coords.latitude,
       lng: coords.longitude,
@@ -82,7 +81,7 @@ export default function DeliveryAddressModal({
                 id="search"
                 name="search"
                 ref={inputRef}
-                placeholder={t("search")}
+                placeholder={t("search")!} // Добавлен оператор non-null assertion
                 autoComplete="off"
                 defaultValue={address}
               />
