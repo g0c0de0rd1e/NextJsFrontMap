@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import React, { MutableRefObject, useRef, useEffect } from "react";
 import { getAddressFromLocation } from "utils/getAddressFromLocation";
 import { IShop } from "interfaces";
@@ -55,7 +54,7 @@ export default function Map({
           if (center) {
             const newLocation = { lat: center.lat, lng: center.lng };
             setLocation(newLocation);
-            getAddressFromLocation(`${newLocation.lat},${newLocation.lng}`).then((address) => {
+            getAddressFromLocation(center.lat, center.lng).then((address) => {
               if (inputRef?.current) inputRef.current.value = address;
             });
           }
@@ -66,9 +65,9 @@ export default function Map({
         const bounds = new maplibregl.LngLatBounds();
         shops.forEach((shop) => {
           const shopLocation = [shop.location?.longitude || 0, shop.location?.latitude || 0];
-          bounds.extend(shopLocation);
+          bounds.extend(shopLocation as [number, number]);
         });
-        bounds.extend([location.lng, location.lat]);
+        bounds.extend([location.lng, location.lat] as [number, number]);
         mapRef.current.fitBounds(bounds);
       }
     }

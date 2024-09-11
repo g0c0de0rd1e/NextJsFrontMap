@@ -109,21 +109,21 @@ export default function CheckoutDeliveryForm({ formik, data }: Props) {
             label={t("office")}
             value={formik.values.address?.office}
             onChange={formik.handleChange}
-            placeholder={t("type.here")}
+            placeholder={t("type.here")!}
           />
           <TextInput
             name="address.house"
             label={t("house")}
             value={formik.values.address?.house}
             onChange={formik.handleChange}
-            placeholder={t("type.here")}
+            placeholder={t("type.here")!}
           />
           <TextInput
             name="address.floor"
             label={t("floor")}
             value={formik.values.address?.floor}
             onChange={formik.handleChange}
-            placeholder={t("type.here")}
+            placeholder={t("type.here")!}
           />
         </div>
         <TextInput
@@ -131,7 +131,7 @@ export default function CheckoutDeliveryForm({ formik, data }: Props) {
           label={t("comment")}
           value={formik.values.note}
           onChange={formik.handleChange}
-          placeholder={t("type.here")}
+          placeholder={t("type.here")!}
         />
       </div>
       <DeliveryTimePopover
