@@ -44,7 +44,7 @@ export default function Map({
     if (mapContainer.current && !mapRef.current) {
       mapRef.current = new maplibregl.Map({
         container: mapContainer.current,
-        style: 'https://demotiles.maplibre.org/style.json',
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', 
         center: [location.lng, location.lat],
         zoom: 15,
       });
