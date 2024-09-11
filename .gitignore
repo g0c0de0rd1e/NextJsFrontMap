@@ -36,4 +36,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+.env
+
 .github/workflows/main.yml
