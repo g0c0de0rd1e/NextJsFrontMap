@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useMemo, useState } from "react";
 import cls from "./branchMap.module.scss";
-import MapContainer from "containers/map/mapContainer";
 import { IShop } from "interfaces";
 import { Skeleton } from "@mui/material";
 import StoreCard from "components/storeCard/storeCard";
@@ -9,6 +8,9 @@ import PopoverContainer from "containers/popover/popover";
 import { useRouter } from "next/router";
 import useUserLocation from "hooks/useUserLocation";
 import { useBranch } from "contexts/branch/branch.context";
+import dynamic from 'next/dynamic';
+
+const MapContainer = dynamic(() => import('containers/map/mapContainer'), { ssr: false });
 
 type MarkerProps = {
   data: IShop;
@@ -72,27 +74,10 @@ export default function BranchMapSplash({ data = [], isLoading }: Props) {
     [data]
   );
 
-  const handleApiLoaded = (map: any, maps: any) => {
-    let bounds = new maps.LatLngBounds();
-    for (var i = 0; i < markers.length; i++) {
-      bounds.extend(markers[i]);
-    }
-    if (!markers.length) {
-      bounds.extend({
-        lat: Number(location?.latitude) || 0,
-        lng: Number(location?.longitude) || 0,
-      });
-    }
-    map.fitBounds(bounds);
-  };
-
   return (
     <div className={`${cls.wrapper} ${cls.splash}`}>
       {!isLoading ? (
-        <MapContainer
-          yesIWantToUseGoogleMapApiInternals
-          onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
-        >
+        <MapContainer>
           {markers.map((item, idx) => (
             <Marker
               key={idx}

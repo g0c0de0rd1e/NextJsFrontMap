@@ -1,11 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { MutableRefObject, useRef } from "react";
-import { Coords } from "google-map-react";
+import React, { MutableRefObject, useRef, useEffect } from "react";
 import { getAddressFromLocation } from "utils/getAddressFromLocation";
 import { IShop } from "interfaces";
 import ShopLogoBackground from "components/shopLogoBackground/shopLogoBackground";
-import MapContainer from "containers/map/mapContainer";
 import cls from "./map.module.scss";
+import maplibregl from 'maplibre-gl';
+import dynamic from 'next/dynamic';
+
+const MapContainer = dynamic(() => import('containers/map/mapContainer'), { ssr: false });
 
 const Marker = (props: any) => (
   <img src="/images/marker.png" width={32} alt="Location" />
@@ -16,13 +18,8 @@ const ShopMarker = (props: any) => (
   </div>
 );
 
-const options = {
-  fields: ["address_components", "geometry"],
-  types: ["address"],
-};
-
 type Props = {
-  location: Coords;
+  location: { lat: number; lng: number };
   setLocation?: (data: any) => void;
   readOnly?: boolean;
   shops?: IShop[];
@@ -40,55 +37,42 @@ export default function Map({
   handleMarkerClick,
   useInternalApi = true,
 }: Props) {
-  const autoCompleteRef = useRef<any>();
+  const mapContainer = useRef(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
 
-  async function onChangeMap(map: any) {
-    if (readOnly) {
-      return;
-    }
-    const location = {
-      lat: map.center.lat(),
-      lng: map.center.lng(),
-    };
-    setLocation(location);
-    const address = await getAddressFromLocation(
-      `${location.lat},${location.lng}`
-    );
-    if (inputRef?.current?.value) inputRef.current.value = address;
-  }
-
-  const handleApiLoaded = (map: any, maps: any) => {
-    autoComplete(map, maps);
-    if (shops.length && useInternalApi) {
-      const shopLocations = shops.map((item) => ({
-        lat: Number(item.location?.latitude) || 0,
-        lng: Number(item.location?.longitude) || 0,
-      }));
-      const markers = [location, ...shopLocations];
-      let bounds = new maps.LatLngBounds();
-      for (var i = 0; i < markers.length; i++) {
-        bounds.extend(markers[i]);
-      }
-      map.fitBounds(bounds);
-    }
-  };
-
-  function autoComplete(map: any, maps: any) {
-    if (inputRef) {
-      autoCompleteRef.current = new maps.places.Autocomplete(
-        inputRef.current,
-        options
-      );
-      autoCompleteRef.current.addListener("place_changed", async function () {
-        const place = await autoCompleteRef.current.getPlace();
-        const coords: Coords = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        };
-        setLocation(coords);
+  useEffect(() => {
+    if (mapContainer.current && !mapRef.current) {
+      mapRef.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: 'https://demotiles.maplibre.org/style.json',
+        center: [location.lng, location.lat],
+        zoom: 15,
       });
+
+      mapRef.current.on('moveend', () => {
+        if (!readOnly) {
+          const center = mapRef.current?.getCenter();
+          if (center) {
+            const newLocation = { lat: center.lat, lng: center.lng };
+            setLocation(newLocation);
+            getAddressFromLocation(`${newLocation.lat},${newLocation.lng}`).then((address) => {
+              if (inputRef?.current) inputRef.current.value = address;
+            });
+          }
+        }
+      });
+
+      if (shops.length && useInternalApi) {
+        const bounds = new maplibregl.LngLatBounds();
+        shops.forEach((shop) => {
+          const shopLocation = [shop.location?.longitude || 0, shop.location?.latitude || 0];
+          bounds.extend(shopLocation);
+        });
+        bounds.extend([location.lng, location.lat]);
+        mapRef.current.fitBounds(bounds);
+      }
     }
-  }
+  }, [location, shops, useInternalApi, readOnly, setLocation, inputRef]);
 
   return (
     <div className={cls.root}>
@@ -97,25 +81,19 @@ export default function Map({
           <img src="/images/marker.png" width={32} alt="Location" />
         </div>
       )}
-      <MapContainer
-        center={location}
-        onDragEnd={onChangeMap}
-        yesIWantToUseGoogleMapApiInternals
-        onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
-      >
-        {readOnly && <Marker lat={location.lat} lng={location.lng} />}
-        {shops.map((item, idx) => (
-          <ShopMarker
-            key={`marker-${idx}`}
-            lat={item.location?.latitude || 0}
-            lng={item.location?.longitude || 0}
-            shop={item}
-            onClick={() => {
-              if (handleMarkerClick) handleMarkerClick(item);
-            }}
-          />
-        ))}
-      </MapContainer>
+      <div ref={mapContainer} style={{ width: '100%', height: '500px' }} />
+      {readOnly && <Marker lat={location.lat} lng={location.lng} />}
+      {shops.map((item, idx) => (
+        <ShopMarker
+          key={`marker-${idx}`}
+          lat={item.location?.latitude || 0}
+          lng={item.location?.longitude || 0}
+          shop={item}
+          onClick={() => {
+            if (handleMarkerClick) handleMarkerClick(item);
+          }}
+        />
+      ))}
     </div>
   );
 }

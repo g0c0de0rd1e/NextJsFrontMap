@@ -1,24 +1,30 @@
-import React from "react";
-import GoogleMapReact, { Props } from "google-map-react";
-import { MAP_API_KEY } from "constants/constants";
-import useUserLocation from "hooks/useUserLocation";
+// components/MapContainer.js
+import React, { useEffect, useRef } from 'react';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import useUserLocation from 'hooks/useUserLocation';
 
-export default function MapContainer({ children, ...rest }: Props) {
+export default function MapContainer({ children, ...rest }) {
+  const mapContainer = useRef(null);
   const location = useUserLocation();
+
+  useEffect(() => {
+    const map = new maplibregl.Map({
+      container: mapContainer.current,
+      style: 'https://demotiles.maplibre.org/style.json', 
+      center: [
+        Number(location?.longitude) || 0,
+        Number(location?.latitude) || 0,
+      ],
+      zoom: 15,
+    });
+
+    return () => map.remove();
+  }, [location]);
+
   return (
-    <GoogleMapReact
-      bootstrapURLKeys={{
-        key: MAP_API_KEY || "",
-        libraries: ["places"],
-      }}
-      defaultZoom={15}
-      center={{
-        lat: Number(location?.latitude) || 0,
-        lng: Number(location?.longitude) || 0,
-      }}
-      {...rest}
-    >
+    <div ref={mapContainer} style={{ width: '100%', height: '500px' }}>
       {children}
-    </GoogleMapReact>
+    </div>
   );
 }

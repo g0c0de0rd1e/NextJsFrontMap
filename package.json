@@ -21,6 +21,7 @@
     "@next/bundle-analyzer": "^13.1.6",
     "@reduxjs/toolkit": "^1.9.1",
     "@types/react-leaflet": "^3.0.0",
+    "add": "^2.0.6",
     "axios": "^1.1.3",
     "css-mediaquery": "^0.1.2",
     "dayjs": "^1.11.7",
@@ -32,6 +33,7 @@
     "i18next-http-backend": "^2.0.1",
     "js-cookie": "^3.0.1",
     "leaflet-defaulticon-compatibility": "^0.1.2",
+    "maplibre-gl": "^4.7.0",
     "mobile-detect": "^1.4.5",
     "next": "^14.2.9",
     "next-cookies": "^2.0.3",
@@ -54,7 +56,8 @@
     "sharp": "^0.31.3",
     "slick-carousel": "^1.8.1",
     "swiper": "^8.4.5",
-    "typescript-plugin-css-modules": "^3.4.0"
+    "typescript-plugin-css-modules": "^3.4.0",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@types/css-mediaquery": "^0.1.1",
